@@ -9,8 +9,18 @@ var minifyCSS = require('gulp-minify-css');
 var clean = require('gulp-clean');
 var browserify = require('gulp-browserify');
 var concat = require('gulp-concat');
+var modRewrite = require('connect-modrewrite');
+var livereload = require('gulp-livereload');
 
 // tasks
+gulp.task('watch', function() {
+  // Watch .js files
+  gulp.watch('app/js/**/*.js');
+  // Watch html files
+  gulp.watch('app/**/*.html');
+  // Watch css files
+  gulp.watch('app/css/**/*.css');
+});
 gulp.task('browserifyDist', function() {
   gulp.src(['app/js/main.js'])
   .pipe(browserify({
@@ -66,9 +76,25 @@ gulp.task('copy-html-files', function () {
 gulp.task('connect', function () {
   connect.server({
     root: 'app/',
-    port: 9000
+    port: 9000,
+    middleware: function() {
+      return [
+      modRewrite([
+        '^/event/(.*)$ http://localhost:8080/event/$1 [P]'
+        ])
+      ];
+    }
   });
 });
+
+// gulp.task('connect', function () {
+//   connect.server({
+//     root: 'app/',
+//     port: 9000
+//   });
+// });
+
+
 gulp.task('connectDist', function () {
   connect.server({
     root: 'dist/',
@@ -79,7 +105,7 @@ gulp.task('connectDist', function () {
 
 // default task
 gulp.task('default',
-  ['lint', 'browserify', 'connect']
+  ['clean', 'browserify', 'connect', 'watch']
 );
 // build task
 gulp.task('build',

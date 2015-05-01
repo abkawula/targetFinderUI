@@ -1,15 +1,15 @@
 (function () {
 
-  'use strict';
+//  'use strict';
 
   require('angular');
   require('angular-route');
   require('angular-animate');
   var mainCtrl = require('./controllers/mainctrl');
 
-  angular.module('SampleApp', ['ngRoute', 'ngAnimate'])
+  var app = angular.module('SampleApp', ['ngRoute', 'ngAnimate']);
 
-  .config([
+  app.config([
     '$locationProvider',
     '$routeProvider',
     function($locationProvider, $routeProvider) {
@@ -24,9 +24,9 @@
            redirectTo: '/'
         });
     }
-  ])
+  ]);
 
   //Load controller
-  .controller('MainController', ['$scope', mainCtrl]);
+  app.controller('MainController', ['$scope', '$http', mainCtrl]);
 
 }());
