@@ -13,71 +13,64 @@ var modRewrite = require('connect-modrewrite');
 var livereload = require('gulp-livereload');
 
 // tasks
-gulp.task('watch', function() {
-  // Watch .js files
-  gulp.watch('app/js/**/*.js');
-  // Watch html files
-  gulp.watch('app/**/*.html');
-  // Watch css files
-  gulp.watch('app/css/**/*.css');
-});
-gulp.task('browserifyDist', function() {
-  gulp.src(['app/js/main.js'])
-  .pipe(browserify({
-    insertGlobals: true,
-    debug: true
-  }))
-  .pipe(concat('bundled.js'))
-  .pipe(gulp.dest('./dist/js'))
-});
-gulp.task('browserify', function() {
-  gulp.src(['app/js/main.js'])
-  .pipe(browserify({
-    insertGlobals: true,
-    debug: true
-  }))
-  .pipe(concat('bundled.js'))
-  .pipe(gulp.dest('./app/js'))
-});
-gulp.task('lint', function() {
-  gulp.src(['./app/**/*.js', '!./app/bower_components/**'])
-    .pipe(jshint())
-    .pipe(jshint.reporter('default'))
-    .pipe(jshint.reporter('fail'));
-});
+
+
 gulp.task('clean', function() {
-    gulp.src('./dist/*')
-      .pipe(clean({force: true}));
-    gulp.src('./app/js/bundled.js')
-      .pipe(clean({force: true}));
+  gulp.src('./dist/views', { read: false });
 });
-gulp.task('minify-css', function() {
-  var opts = {comments:true,spare:true};
-  gulp.src(['./app/**/*.css', '!./app/bower_components/**'])
-    .pipe(minifyCSS(opts))
-    .pipe(gulp.dest('./dist/'))
+
+// JSHint task
+gulp.task('lint', function() {
+  gulp.src('app/scripts/*.js')
+  .pipe(jshint())
+  .pipe(jshint.reporter('default'));
 });
-gulp.task('minify-js', function() {
-  gulp.src(['./app/**/*.js', '!./app/bower_components/**'])
-    .pipe(uglify({
-      // inSourceMap:
-      // outSourceMap: "app.js.map"
-    }))
-    .pipe(gulp.dest('./dist/'))
+
+// Styles task
+gulp.task('styles', function() {
+  gulp.src('app/styles/*.s\css')
+  // These last two should look familiar now :)
+  .pipe(gulp.dest('dist/css/'));
 });
-gulp.task('copy-bower-components', function () {
-  gulp.src('./app/bower_components/**')
-    .pipe(gulp.dest('dist/bower_components'));
+
+// Browserify task
+gulp.task('browserify', function() {
+  // Single point of entry (make sure not to src ALL your files, browserify will figure it out)
+  gulp.src(['app/scripts/main.js'])
+  .pipe(browserify({
+    insertGlobals: true,
+    debug: false
+  }))
+  // Bundle to a single file
+  .pipe(concat('bundle.js'))
+  // Output it to our dist folder
+  .pipe(gulp.dest('dist/js'));
 });
-gulp.task('copy-html-files', function () {
-  gulp.src('./app/**/*.html')
-    .pipe(gulp.dest('dist/'));
-});
-gulp.task('connect', function () {
+
+
+
+// gulp.task('connect', function () {
+//   connect.server({
+//     root: 'app/',
+//     port: 9000,
+//     livereload: true,
+//     middleware: function() {
+//       return [
+//       modRewrite([
+//         '^/event/(.*)$ http://localhost:8080/event/$1 [P]'
+//         ])
+//       ];
+//     }
+//   });
+// });
+
+gulp.task('connect', function() {
+  // livereload({start: true});
   connect.server({
-    root: 'app/',
+    root: 'app',
     port: 9000,
-    middleware: function() {
+    livereload: true,
+      middleware: function() {
       return [
       modRewrite([
         '^/event/(.*)$ http://localhost:8080/event/$1 [P]'
@@ -87,27 +80,49 @@ gulp.task('connect', function () {
   });
 });
 
-// gulp.task('connect', function () {
-//   connect.server({
-//     root: 'app/',
-//     port: 9000
-//   });
+// // Views task
+// gulp.task('views', function() {
+//   // Get our index.html
+//   gulp.src('app/index.html')
+//   // And put it in the dist folder
+//   .pipe(gulp.dest('dist/'));
+
+//   // Any other view files from app/views
+//   gulp.src('app/views/**/*')
+//   // Will be put in the dist/views folder
+//   .pipe(gulp.dest('dist/views/')
+//     .pipe(livereload())
+//     );
 // });
 
+// gulp.task('watch', function() {
+//   console.log("watch was tripped");
+//   livereload.listen();
+//   gulp.watch([
+//     'app/js/**/*.js', 
+//     '**/*.html', 
+//     'app/css/**/*.css'
+//     ]
+//     , ['views']
+    
+//     );
+// });
 
-gulp.task('connectDist', function () {
-  connect.server({
-    root: 'dist/',
-    port: 9999
-  });
+gulp.task('html', function () {
+  gulp.src('./app/*.html')
+    .pipe(connect.reload());
+});
+ 
+gulp.task('watch', function () {
+  gulp.watch([
+    'app/js/**/*.js', 
+    '**/*.html', 
+    'app/css/**/*.css'
+    ], ['html']);
 });
 
 
-// default task
-gulp.task('default',
-  ['clean', 'browserify', 'connect', 'watch']
-);
-// build task
-gulp.task('build',
-  ['lint', 'minify-css', 'browserifyDist', 'copy-html-files', 'copy-bower-components', 'connectDist']
-);
+
+// Dev task
+gulp.task('dev', ['clean', 'styles', 'lint', 'browserify'], function() { });
+gulp.task('default', ['dev', 'connect', 'watch']);
