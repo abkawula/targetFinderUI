@@ -17,6 +17,11 @@
       <h1>Angular-Gulp-Browserify-Starter</h1>
       <!-- views -->
       <!--div ng-view></div-->
+      <div>
+        Latitude: {{lat}} <br />
+        Longitude: {{lng}} <br />
+        Accuracy: {{accuracy}}
+      </div>
       <div ng-repeat="event in eventList">
         <ul>
           <li>{{ event.name }}</li>
@@ -26,6 +31,6 @@
     <!-- scripts -->
     <script src="bower_components/jquery/dist/jquery.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
-    <script src="js/bundled.js"></script>
+    <script src="js/bundle.js"></script>
   </body>
 </html>

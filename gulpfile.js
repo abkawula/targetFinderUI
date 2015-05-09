@@ -36,7 +36,7 @@ gulp.task('styles', function() {
 // Browserify task
 gulp.task('browserify', function() {
   // Single point of entry (make sure not to src ALL your files, browserify will figure it out)
-  gulp.src(['app/scripts/main.js'])
+  gulp.src(['app/js/main.js'])
   .pipe(browserify({
     insertGlobals: true,
     debug: false
@@ -44,7 +44,7 @@ gulp.task('browserify', function() {
   // Bundle to a single file
   .pipe(concat('bundle.js'))
   // Output it to our dist folder
-  .pipe(gulp.dest('dist/js'));
+  .pipe(gulp.dest('app/js'));
 });
 
 
@@ -118,7 +118,7 @@ gulp.task('watch', function () {
     'app/js/**/*.js', 
     '**/*.html', 
     'app/css/**/*.css'
-    ], ['html']);
+    ], ['html', 'browserify']);
 });
 
 
