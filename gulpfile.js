@@ -16,8 +16,10 @@ var livereload = require('gulp-livereload');
 
 
 gulp.task('clean', function() {
-  gulp.src('./dist/views', { read: false });
+    gulp.src('./dist/*')
+      .pipe(clean({force: true}));
 });
+
 
 // JSHint task
 gulp.task('lint', function() {
@@ -30,7 +32,8 @@ gulp.task('lint', function() {
 gulp.task('styles', function() {
   gulp.src('app/styles/*.s\css')
   // These last two should look familiar now :)
-  .pipe(gulp.dest('dist/css/'));
+  .pipe(gulp.dest('dist/css/'))
+  .pipe(connect.reload());
 });
 
 // Browserify task
@@ -44,30 +47,14 @@ gulp.task('browserify', function() {
   // Bundle to a single file
   .pipe(concat('bundle.js'))
   // Output it to our dist folder
-  .pipe(gulp.dest('app/js'));
+  .pipe(gulp.dest('dist/js'))
+  .pipe(connect.reload());
 });
-
-
-
-// gulp.task('connect', function () {
-//   connect.server({
-//     root: 'app/',
-//     port: 9000,
-//     livereload: true,
-//     middleware: function() {
-//       return [
-//       modRewrite([
-//         '^/event/(.*)$ http://localhost:8080/event/$1 [P]'
-//         ])
-//       ];
-//     }
-//   });
-// });
 
 gulp.task('connect', function() {
   // livereload({start: true});
   connect.server({
-    root: 'app',
+    root: 'dist',
     port: 9000,
     livereload: true,
       middleware: function() {
@@ -80,49 +67,27 @@ gulp.task('connect', function() {
   });
 });
 
-// // Views task
-// gulp.task('views', function() {
-//   // Get our index.html
-//   gulp.src('app/index.html')
-//   // And put it in the dist folder
-//   .pipe(gulp.dest('dist/'));
-
-//   // Any other view files from app/views
-//   gulp.src('app/views/**/*')
-//   // Will be put in the dist/views folder
-//   .pipe(gulp.dest('dist/views/')
-//     .pipe(livereload())
-//     );
-// });
-
-// gulp.task('watch', function() {
-//   console.log("watch was tripped");
-//   livereload.listen();
-//   gulp.watch([
-//     'app/js/**/*.js', 
-//     '**/*.html', 
-//     'app/css/**/*.css'
-//     ]
-//     , ['views']
-    
-//     );
-// });
-
 gulp.task('html', function () {
   gulp.src('./app/*.html')
-    .pipe(connect.reload());
+  .pipe(gulp.dest('dist'))
+  .pipe(connect.reload());
 });
  
 gulp.task('watch', function () {
   gulp.watch([
-    'app/js/**/*.js', 
-    '**/*.html', 
+    'app/js/**/*.js',  
+    ], ['browserify']);
+  gulp.watch([
+    'app/*.html', 
+    ], ['html']);
+  gulp.watch([
     'app/css/**/*.css'
-    ], ['html', 'browserify']);
+    ], ['styles']);
+
 });
 
 
 
 // Dev task
-gulp.task('dev', ['clean', 'styles', 'lint', 'browserify'], function() { });
+gulp.task('dev', ['clean', 'html', 'styles', 'lint', 'browserify'], function() { });
 gulp.task('default', ['dev', 'connect', 'watch']);
